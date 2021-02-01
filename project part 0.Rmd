@@ -1,0 +1,89 @@
+---
+title: "NFL 2020"
+author: "Jacob Mantooth"
+date: "1/31/2021"
+output: html_document
+---
+
+# Project Part 0 
+# Part 1
+
+First i will be loading in my data
+```{r}
+data = read.csv('https://raw.githubusercontent.com/jacmantooth/applied_stats-/main/2020%20nfl%20defense%20.csv')
+```
+```{r}
+summary(data)
+```
+# part 2
+The quantitative variable that I picked for this project is Defenses Touchdowns. What a Defense Touchdowns means is how many touchdowns a defense gives up. my next part of this project will be the summary statistics.  The first part is my five-number summary and the mean of my variable.
+```{r}
+summary(data$TD)
+```
+my mean is  27.22,  the min is 17, 1st Qu is 22.75, the median is 28.00, while the 3rd Qu is 30.25 and my max was 38 touchdowns allowed.
+```{r}
+sd(data$TD)
+```
+My standard deviation is 5.210005
+
+The next part of my project is the graphical display.  I will be first creating a histogram
+```{r}
+hist(data$TD)
+```
+
+This graph shows us that not many teams allowed 35+ touchdowns but few allowed only 15 touchdowns.
+The next graph i wil be making is the box plot. 
+```{r}
+boxplot(data$TD)
+```
+
+This show us the five number summary which i already talked about above.
+Finally i will be making the qq plot 
+```{r}
+qqnorm(data$TD)
+```
+
+The Q-Q plot shows us there is no trend with the data.
+Now i will be exploring data on categorical variable
+The categorical variable that i used is Playoff. which is wether a team made the playoff or not.
+```{r}
+table(data$playoff)
+```
+
+As you can see not many teams made the playoffs.
+The next part will be my relative frequency table
+```{r}
+table(data$playoff)/length(data$playoff)
+```
+
+the next part is just me messing around with data. i wanted to see the table of playoff and TD allowed. i really cant tell anything from it lolz
+```{r}
+table(data$playoff,data$TD)
+```
+# hypothesis testing part 3
+
+i will be preforming a hypothesis test comparing the mean to a fixed value. i will also be stating my null and alternative hypothesis.
+$$
+H_0:  \mu = 3000 \\
+H_A:  \mu\neq 3000
+$$
+so what my null hypothesis says is that passing yards allowed will be 3000 yards. while my alternative hypothesis say that it will not be 3000
+```{r}
+t.test(data$Yds, mu=3000)
+```
+So basically i am going to reject my null hypothesis because i was wayy off.
+
+I will now be preforming a hypothesis test comparing two means. I will also be stating my null and alternative hypothesis.
+i will be comparing air time and yard after the catch. my null hypothesis is that Air yardage will be less then or equal to YAC while my alternative hypothesis is that Air > YAC. Air is mu1 and Yac is mu2
+```{r}
+less =data[which(data$Air <= data$YAC),]
+more =data[which(data$Air > data$YAC),]
+```
+$$
+H_0:  \mu_1 <= \mu_2 \\
+H_A:  \mu_1 > \mu_2
+$$
+```{r}
+t.test(less$win,more$win)
+```
+i can accept my null hypothesis because Air is less then Yac
