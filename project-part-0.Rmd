@@ -1,0 +1,673 @@
+---
+title: "NFL Defense 2020"
+author: "Jacob Mantooth"
+date: "1/31/2021"
+output:
+  html_document:
+    toc: true
+    theme: yeti
+    fontsize: 12pt
+---
+
+
+
+# Project Part 0: Hypothesis Testing
+## Part 1
+First, I will be loading in [data](https://raw.githubusercontent.com/jacmantooth/applied_stats-/main/2020%20nfl%20defense%20.csv)
+```{r}
+data = read.csv('https://raw.githubusercontent.com/jacmantooth/applied_stats-/main/2020%20nfl%20defense%20.csv')
+```
+```{r}
+summary(data)
+```
+
+## Part 2
+
+The quantitative variable that I picked for this project will be Touchdowns. What Touchdowns means in my data set is how many touchdowns did that defense give up. The next part of this project will be the summary statistics.  The first part is my five-number summary and the mean of my variable.
+
+```{r}
+summary(data$TD)
+```
+
+My mean is  27.22,  the minimum is 17, 1st Qu is 22.75, the median is 28.00, while the 3rd Qu is 30.25 and my maximum was 38 touchdowns allowed.
+I will now find the standard deviation of my variable 
+```{r}
+sd(data$TD)
+```
+My standard deviation is 5.210005
+
+The next part of my project is the graphical display.  I will be first creating a histogram
+```{r}
+hist(data$TD)
+```
+
+This graph shows us that not many teams allowed 35+ touchdowns but few allowed only 15 touchdowns.
+The next graph I will be making is the box plot. 
+```{r}
+boxplot(data$TD)
+```
+
+This shows us the five-number summary which I already talked about above.
+Finally, I will be making the qq plot 
+```{r}
+qqnorm(data$TD)
+
+```
+
+The Q-Q plot shows us there is no trend with the data.
+Now I  will be exploring data on a categorical variable
+The categorical variable that I used is Playoff. Which is whether a team made the playoff or not.
+```{r}
+table(data$playoff)
+```
+
+As you can see not many teams made the playoffs. In the NFL they only allow 14 teams in the playoffs
+The next part will be my relative frequency table
+```{r}
+table(data$playoff)/length(data$playoff)
+```
+
+This next part I made a two-way table of how many times did a team Blitz and if a team made the playoffs.
+```{r}
+table(data$playoff,data$Bltz)
+```
+You really can’t tell anything from this so, this really is noy that usefully
+
+## Hypothesis Testing Part 3
+
+I will be preforming a hypothesis test comparing the mean to a fixed value. i will also be stating my null and alternative hypothesis.
+$$
+H_0:  \mu = 3000 \\
+H_A:  \mu\neq 3000
+$$
+so, what my null hypothesis says is that passing yards allowed will be 3000 yards. while my alternative hypothesis say that it will not be 3000
+```{r}
+t.test(data$Yds, mu=3000)
+```
+So basically, I am going to reject my null hypothesis because it ia was way off.
+
+I will now be preforming a hypothesis test comparing two means. I will also be stating my null and alternative hypothesis.
+I will be comparing airtime and yard after the catch. my null hypothesis is that Air yardage will be equal to YAC while my alternative hypothesis is that Air will not equal YAC. I will have Air as mu1 and YAC as mu2
+
+$$
+H_0:  \mu_1 = \mu_2 \\
+H_A:  \mu_1 \neq \mu_2
+$$
+```{r}
+t.test(data$Air,data$YAC)
+```
+I can safely accept my alternative hypothesis of the two not being equal
+
+# Project Part 1: Regression 
+
+## Part 1
+
+The two quantitative variables that I have picked are Losses and Yards allowed. Losses is how many losses that team had that season and Yard allowed being how many yards did that team defense give up
+
+I will first be doing a linear model and linear regression
+I want to predict loses with yards allowed by a defense
+```{r}
+lm(lose ~ Yds, data = data)
+mod=lm(lose ~ Yds, data = data)
+model = mod
+```
+I have now created a linear model with Yds allowed being a predictor for losses. my slop is .00244 and my intercept is -1.40808. This is saying for every yard allowed we multiple it by .00244 the we add -1.40808. 
+
+I will now do a summary function to get more info on the linear regression
+```{r}
+summary(model)
+```
+
+Oh, wow so much stuff. We see the residuals and the coefficient in this summary. We see that our significant it is not that significant here, same goes for our intercept.
+
+I will now plot my linear model
+```{r}
+plot(model)
+```
+
+The most interesting graph here is the normal Q-Q. This graph is looking at the normality of my data. We see that my data is actually pretty normal here, in the middle then goes off towards the top. i would say that my data is pretty normal then.
+
+## Part 2
+
+I will now use the predict command to predict losses by a team base on yards given up
+```{r}
+Name_predict<-predict(model)
+names(Name_predict)<-c(data$Tm)
+Name_predict
+```
+This is so cool in my opinion. If you watched football you know that WFT defiantly had more losses, then 6 and I find it interesting that it says the falcon are predicted to be the team in the NFL lol. 
+
+I will now be doing my residual for my prediction; The residual is the difference between the prediction and actual value.
+```{r}
+Name_residuals<-residuals(model)
+names(Name_residuals)<-c(data$Tm)
+Name_residuals
+```
+As you can see the predictions were all over the place, with some being over and some being under. we also see that some predictions are pretty spot on. I will now create a histogram to see if our residual is normal
+```{r}
+hist(residuals(model),xlab = "residual")
+```
+
+Clearly it is not normal. well maybe a little normal but mostly not normal.
+
+I will now be predicting losses base on Yards given up. let say four random teams gave up 2000,3000,4000,5000 yards. Now I will predict the losses each team will have using my model. I will also be showing the confident interval.
+```{r}
+ylist =c (2000,3000,4000,5000)
+point <- data.frame(Yds = ylist)
+predict(model,point, interval = "confidence")
+```
+From this prediction model we see that if a team gives up only 2000 yards it is predicted that they will only lose about 3.5 games while if a team gives up 5000 yards, they are predicted to lose 10.80 games. we expect that 95% of my data will fall between these intervals.
+
+
+Next, I will be making a graph with my two quantitative variables. I know some of yall don’t watch football so I thought labeling the dots would help. I know it looks messy in some places but now you can tell which teams are which dots. I also added my abline line and colored it to help it stand out.
+```{r}
+plot(lose ~ Yds, data = data, main = "Loses Against Yards allowed", xlab = "Yards allowed", ylab = "Loses")
+abline(mod, col="red", lwd=2)
+text(lose~ Yds, labels=Tm,data=data, cex=0.5, font=2)
+```
+
+I thought this graph was really cool honestly. It is really interesting to see where each team falls. For example, look at the  Seattle Seahawks and Detroit Lions both gave up similar amount of yardages but one had only 4 losses while the lions had 11 losses.
+
+## Part 3
+
+I will now compute the correlation between my two variables and do a hypothesis test on the correlation.
+```{r}
+cor(data$Yds,data$lose)
+```
+As you can see my correlation is .30142828
+Now I will be doing an hypothesis test of the correlation test 
+```{r}
+cor.test(data$Yds,data$lose)
+```
+I will reject the null hypothesis in this case and accept my alternative hypothesis of it not being equal to 0
+
+## Part 4
+
+Now I will use a categorical variable and repeat the regression. I will now be predicting losses by Yds given up and winning record
+```{r}
+fit <- lm(lose ~ Yds + winning.record., data)
+fit
+```
+```{r}
+summary(fit)
+```
+
+Now I am going to compute a prediction. I will create the ultimate defense, a NFL team that only gave up 2000 yards but somehow had a losing record ooooo interesting.
+```{r}
+y <- data.frame(Yds = 2000, winning.record.  = "no")
+predict(fit, y)
+```
+It is predicted that this team will lose about 7.7 games sadly.
+
+## Part 5
+
+I will now make a graph for my categorical variable
+```{r}
+plot(lose ~ Yds, data = data, main = "Loses Against Yards allowed", xlab = "Yards allowed", ylab = "Loses")
+abline(fit, col="black", lwd=2)
+abline(model, col="orange", lwd=2)
+text(lose~ Yds, labels=Tm,data=data, cex=0.5, font=2)
+```
+
+So here I did my colors in ECU color, go tigers. The orange line is my original model and the black line the new LM we created above. In my opinion the new LM that we created above is better. We really can’t predict anything here! I would say we need more data, maybe data from 2011-2021 season would be good enough.
+
+## Report 
+
+
+I thought the most interesting thing about my Project Part 1 was the prediction model. I thought it was really cool to see if you can predict losses by a team by a certain variable which was fun to play around with. I also enjoyed creating the last graph and adding the names to the variables. what I found out after doing Project Part 1 is that it is very hard to predict losses in the NFL, I think you could tell just by looking at the residual for my prediction.  I now understand why ESPN always get predictions wrong.
+
+# Project Part 2: Bootstrap and Cross Validation
+## Part 1: Bootstrapping
+### Part 1A: Repeat the hypothesis tests you preformed in Module 0 using the bootstrap techniques. Compare the confidence intervals and results. Compute a p value for the test statistic.
+
+What is Bootstrapping one my ask, Well Bootstrapping is a statistical procedure that resamples a single dataset to create many simulated samples with replacement.
+
+First thing first I want to set my seed and load in the library so that I can do Bootstrapping. after I do that, I want to create a function that finds the mean. I can now Bootstrap using 10,000 samples
+```{r}
+library(boot)
+set.seed(52)
+samp_mean <- function(x,i){
+  mean( x[i])
+}
+
+
+results <- boot(data$Yds, samp_mean,10000)
+plot(results)
+```
+
+As you can see our data is pretty normal so that's a good thing. I now  Compare
+the confidence intervals and result. 
+Let's first see what our bootstrap confidence interval is 
+```{r}
+boot.ci(results)
+```
+So, the population mean is between 3697 Yards and 3985 Yards allowed.
+we can now compare our bootstrap confidence interval to our t test confidence interval.
+I will just use my t test from earlier where my null hypothesis says that passing yards allowed will be 3000 yards. while my alternative hypothesis says that it will not be 3000
+$$
+H_0:  \mu = 3000 \\
+H_A:  \mu\neq 3000
+$$
+```{r}
+t.test(data$Yds, mu=3000)
+```
+We see that our confidence interval for t test is 3689.576 yards to  3995.236 yards while our bootstrap confidence interval is 3697 yards and 3985 yards. Our two-confidence interval are pretty darn close. In both cases we would reject our null hypothesis since it is way short of both confidence interval.
+
+I will now Computing p Value With Bootstrap
+I will Compute the p Value using t test
+$$
+t = \frac{\mu-\overline x}{SE}
+$$
+First, I will get $\overline x$ using the average of every bootstrap
+```{r}
+xbar = results$t0
+xbar
+```
+I next will find the $SE$ using the $SD$ of the bootstrap statistic
+```{r}
+se=sd(results$t)
+```
+Since my graph above for our bootstrap looks pretty normal, we can actually get the confidence interval by using $\pm 2SE$
+```{r}
+c(results$t0-2*se,results$t0+2*se)
+```
+My confidence interval is 3695.422  and 3989.391
+we will now find the t 
+```{r}
+t = (3000-results$t0)/se
+1-pt(t,9999)
+```
+My p value is 1, what this imply that 100% of the time our null hypothesis of 3000 will be false. 
+
+### Part 1B: Create a hypothesis test on a non-parametric statistic (median, mode, min, max, etc.) Preform the hypothesis test using the bootstrap method. Be sure to create confidence intervals and properly state your conclusion. Compute a p value for the test statistic.
+
+Here I am going to use median for my non-parametric statistic. The reason I picked median was because it was the most normal out of the four. I thought the more normal the non-parametric would be the easier it would be to work with.
+
+First thing I will be doing is creating a function so we can use it when bootstrapping.
+```{r}
+samp_median <- function(x,i){
+  median(x[i])
+}
+
+boot2 <- boot(data$Yds,samp_median, R = 10000)
+plot(boot2)
+```
+
+This isnt the most normal but it's the best out of the four. you should have seen the mean lol, it was so bad and not normal.
+let's see what our bootstrap confidence interval is 
+```{r}
+boot.ci(boot2,type = "perc")
+```
+
+we see that our 95% CONFIDENCE INTERVAL is 3664 - 3962. Since our data is pretty normalishhhh we can do it this way by using $\overline x \pm 2SE$
+```{r}
+xbar=mean(boot2$t)
+s = sd(boot2$t)
+c(xbar- 2*s, xbar+2*s)
+```
+As you can see our two confidence intervals are pretty darn close. so, either way would have been fine.
+
+I will now find the p value for the test statistic. my null hypothesis  will be the following 
+$$
+H_0:  \mu = 3642 \\
+H_A:  \mu\neq 3642
+$$
+```{r}
+mean(3642==boot2$t)
+
+t = (3642-boot2$t0)/s
+pt(t,9999)
+```
+so less then 1% of my cases were 3642. you may ask why did i pick 3642. well, it was the first number that gave me a value and I wanted a value not just 0 because 0 is boring and empty. we can  reject the null hypothesis since it is less then 5%
+
+## Part 2: Cross Validation
+### Part 2A: Randomly divided your data into two pieces using the two-thirds split. Withhold a third of the data and preform the regression. Graph a scatterplot identifying the data used in the testing and training and including the linear regression. Examine the prediction on the testing data using the R2 and RMSE as well as the confidence intervals on the regression.
+
+Now I will be doing Cross validation. I will first need to load the library of caret, after that I will divide my data into two-thirds for the test sample. 
+```{r}
+library(caret)
+TS <- createDataPartition(data$rank, p =.66, list=FALSE)
+TS
+```
+
+So now we will turn my test sample into two different data's. The test set will become my training data and not test set will be my test data.
+```{r}
+trainData<- data[TS,]
+testData<- data[-TS,]
+testData[]
+```
+oooo look at my test data so nice, and pretty. just what we want!
+
+Now I’m going to try and predict wins base off of times a team Blitzed using our training data. 
+```{r}
+model<- lm(win ~ Bltz, data = trainData)
+summary(model)
+```
+ Now I will add a new column to my data, saying whether it is Trained or naw. so if it was in the training set we will name it Train and if it wasn’t in the Training set it gets called Test.
+```{r}
+data[TS, 'Test_Train']<- "Train"
+data[-TS, 'Test_Train']<- "Test"
+data$Test_Train
+```
+So pretty and just what I wanted
+
+I will next graph a scatterplot identifying the data used in the testing and training and will include the linear regression. I thought using ggplot was way better and looked way nicer.
+```{r}
+library(ggplot2)
+ggplot(data = data, mapping = aes(Bltz,win,color = Test_Train))+
+  geom_jitter()+
+  geom_smooth(method = lm)
+```
+
+What i get from this graph is that my Test and Train Data is very different. You can see that the Test is flat while the training is a positive slope 
+
+The next thing I will be doing is examining the prediction on the testing data using the R2 and RMSE as well as the confidence intervals on the regression.
+```{r}
+pred <-predict(model,data[-TS,])
+pred
+```
+This is the prediction for number of wins based on blitz’s using the test data. I wish it showed which team it was
+I will now do the r squared value comparing the predictions to the actual wins
+```{r}
+R2(pred,data[-TS,"win"])
+```
+we see that our R squared is 0.001330617 but compared to our model which was 0.124. uhm so they are nowhere close to each other but they arnt crazy far apart.
+
+
+### Part 2B: Repeat using a 10-fold cross validation. Be certain to compare confidence intervals. You need not create the visualizations but be sure to comment on the results.
+what is k fold? well in k folds you divide your data up into k pieces and you hold back one of the pieces. you then fit your model on the remaining pieces.you then test the model on that piece that you held back. you then mix them all together hold back one hold back a different one this time and repeat k times. we do this to run a statistic on the statistic on the test statistic. that is what and how k fold is.
+
+I will now do the last part of this project using k folds. here i will be doing a 10 fold cross validation
+```{r}
+trainc <- trainControl(method = "cv", number = 10)
+model2 <- train(win ~ Bltz, data = data,
+                method = "lm",
+                trControl = trainc)
+print(model2)
+```
+we used 32 samples, we that my Rsquared values is 0.5961926, we see the different sample sizes and we see how many folds it did. the thing that interest me the most is the R-squared, a  R-squared value between 0.3 < r < 0.5 is generally considered a weak or low effect. basically maybe there is an small connection between blitzing and winning?
+
+I will now do a Summary of the model2
+```{r}
+summary(model2)
+```
+This gives me a good estimate based on the k-fold cross validation. 
+
+
+## Part 3: Write your report!
+I thought some parts of this project was really hard to understand. I had trouble wrapping my head around k-fold cross validation but after watching a ton of videos I somewhat understand k-fold cross validation now. i thought understanding this project was harder then actually doing it.
+Some successes of my Bootstrapping were that everything went right and was pretty easy to get done. One of my failure for Bootstrapping was that I had a hard time find non-parametric statistic that was normal. 
+One of my successes of Cross Validation was that I was able to create the graph and  prediction on the testing data. 
+I had two major failures with Cross Validation first was not being able to understand it that well. The last failure was that the two variables really didn’t tell us anything at all but predicting football takes a lot more than just two simple variables.
+Also dont not leave your cat alone with your labtop. I was almost finish with this project and i go up to go to the rest room. When I came back she's on my laptop and some how closed out of r and i lost alot of my project LOL.This isnt the first time she has done this either smh. 
+
+#  Project Part 3: Goodness of Fit
+## Part 1: Goodness of Fit
+
+
+### Part 1A: Use a categorical variable and preform a goodness of fit test. There should be more than two categories for this test to work properly. It is easiest to assume that all categories should be represented equally but if you have reason to suggest another model, please explain. In either case include the expected values.
+
+let's look at our data 
+```{r}
+head(data)
+```
+as you can see my data doesnt have that much categorical variables in it. so what i am going to do is make my own categorical variables using the data given. 
+
+so here I am going make three different categorical variables. 
+```{r}
+data[which(data$rank <= 16),"D_rank"] = "Top"
+data[which(data$rank > 16),"D_rank"] = "Bottom"
+data[which(data$Prss. > 20 ),"Prss above 20%"] = "yes"
+data[which(data$Prss. <= 20 ),"Prss above 20%"] = "no"
+data[which(data$D_rank == 'Top' & data$playoff == 'yes'),"top rank d and play off"] = "yes"
+data[which(data$D_rank == 'Top' & data$playoff == 'no'| data$D_rank == 'Bottom' & data$playoff == 'yes' | data$D_rank == 'Bottom' & data$playoff == 'no'),"top rank d and play off"] = "no"
+data[which(data$D_rank == 'Top' &  data$playoff == 'yes' & data$`Prss above 20%` == 'yes'),"playoff_topD_pabove20"]="yes" 
+data$playoff_topD_pabove20[is.na(data$playoff_topD_pabove20)] = 'no'
+head(data)
+```
+ooooo so nice! got carried away lol but now i  have more data to work with.
+let's create a table of playoff_topD_pabove20 that i created. what this categorical variable means is that is a team made the playoff was a top 16 team and blitzed above 20% then they got a yes other wise a no.
+```{r}
+table(data$playoff_topD_pabove20)
+```
+very intersting i would say. this means over half of NFl teams that made the playoffs had an top 16 defense and blitz over 20% of the time.
+my null hypothesis  will be the following The number of NFl teams that made the playoffs had an top 16 defense and blitz over 20% of the time is equal to 16 while my alternative hypothesis is The number of NFl teams that made the playoffs had an top 16 defense and blitz over 20% of the time is not equal to 16
+$$
+H_0:  \mu = 16 \\
+H_A:  \mu\neq 16
+$$
+
+```{r}
+test = chisq.test(table(data$playoff_topD_pabove20), p = c(1,1)/2)
+test
+```
+we see that my p-value is pretty small while my X-squared is pretty big. While I have evidence to suggest these numbers might be different, the statistics did not bear that out. I will fail to reject my null hypothesis here.
+
+The expected values for the number of NFl teams that made the playoffs had an top 16 defense and blitz over 20% of the time follows
+```{r}
+test$expected
+```
+
+
+### Part 1B: Include a bar chart.
+Here is my bar chart
+```{r}
+barplot(table(data$playoff_topD_pabove20))
+```
+
+
+## Part 2: Test for Independence
+### Part 2A: Using two categorical variables preform a test for independence. Include the expected values
+```{r}
+table(data$D_rank,data$winning.record.)
+```
+so if you were at the bottom of the league in defense you likely had an losing record.
+Let’s set up the hypothesis test.
+$$
+H_0:  \textrm{Winning record is independent of Defense rank } \\
+H_A:  \textrm{Winning record is dependent on Defense  rank }
+$$
+```{r}
+test2 = chisq.test(table(data$D_rank,data$winning.record.))
+test2
+```
+oh wow we got a pretty big x squared value and a small p-value. We have evidence to suggest that the Winning record is dependent on Defense rank. Here i am going to reject the null hypothesis
+here is the expected 
+```{r}
+test2$expected
+```
+### Part 2B: mosaic plot
+```{r}
+mosaicplot(table(data$D_rank,data$winning.record.))
+```
+
+# Project Part 4: Anova
+## Part 1: One-Way ANOVA
+
+
+### Part 1A: Use a categorical variable (with more than two categories) and a quantitative variable and preform the ANOVA test to see if the means are equal.
+
+
+What's up yall today I will be exploring my data some more but this time using Anova. To start off with I am going to make a new categorical variable to play around with, also let's look at the data again. 
+```{r}
+data[which(data$D_rank == 'Top' &  data$`Prss above 20%` == 'yes'),"topD_pabove20"]="yes" 
+data$topD_pabove20[is.na(data$topD_pabove20)] = 'no'
+head(data)
+```
+
+
+so here I made a new variable called topD_pabove20. what this variable means is that if a team had a top 16 ranked Defense and pressure was above 20% they got a yes other-wise I filled the Na with no. prolly not the best idea to fill NA with no but im lazy and it works, also i didnt want to write another long code just for no. also oh wow our data table is getting bigger by the day. 
+
+Now I'm going to ask if top 16 ranked Defense and if pressure was above 20% affects Wins for a team. we are going see if the means are the same. Here is my hypotheses test that i will be using
+$$
+H_0:  u_1=u_2=...=u_n \\
+H_A:  u_1 \neq u_2 \textrm{ for some } i \textrm{ and }j 
+$$
+```{r}
+model = aov(win~topD_pabove20, data = data)
+summary(model)
+```
+as you can see the means are different and our Pr is less then 5%, so we can reject our null hypothesis 
+
+
+### Part 1B:Include a visualization looking at the means.
+
+so here we going see is our assumption of equal variance is true. 
+```{r}
+plot(model,1)
+```
+
+looks like we had the right idea of assumption of equal variance 
+
+now we are going see if our model is normal
+```{r}
+plot(model,2)
+```
+
+okay so our QQ-plot looks pretty normal, no need to be worried! so i can safely reject my null hypothesis of means being the same.
+
+Here im going create a visualization to show that the means are different.
+```{r}
+library(ggrepel)
+y1 <-  mean(data$win, na.rm = TRUE)
+plotnfl <-ggplot(data = data, aes(x = topD_pabove20, y = win))+
+  geom_jitter(color = 'grey',width = 0.1, height = 0.1) +
+  stat_summary(fun.data = 'mean_se', color = "red") +
+  geom_hline(yintercept = y1,  color = "blue",linetype = "dashed")
+plotnfl + geom_label_repel(aes(label = Tm),
+                  data         = subset(data, win< 4),
+                  box.padding   = 0.5,
+                  point.padding = 0.5,
+                  segment.color = 'grey50') +
+  geom_label_repel(aes(label = Tm),
+                  data         = subset(data, win> 12),
+                  box.padding   = 0.5,
+                  point.padding = 0.5,
+                  segment.color = 'grey50') +
+  geom_label_repel(aes(label = Tm),
+                  data         = subset(data, topD_pabove20=="no"&win>10  ),
+                  box.padding   = 0.5,
+                  point.padding = 0.5,
+                  segment.size  = 0.2,
+                  segment.color = 'grey50') +
+  theme_classic()
+```
+
+clearly this graph supports that the null hypotheses was false. This graph really helps see the differences in the means as the means are really far apart. I also label my graph to spicy it up some. I mainly did it because I wanted to show the differences between the top team and the bottom team. I didnt want to add all the team just because it made it messy and took away from what I was trying to show. I can safely reject my null hypotheses now and sleep tightly tonight.
+
+
+## Part 2
+### Part 2A:Using two categorical variables and a quantitative variable, preform a two-way ANOVA.
+
+Here i will be using two categorical variables and a quantitative variable, preforming a two-way ANOVA. so here we are going have three hypotheses 
+
+$$
+H_0: \textrm{ There is no difference in average wins for any top Defences that blizted above 20%. }\
+H_A: \textrm{ There is a difference in average wins for any top Defences that blizted above 20%. } 
+\\
+H_0: \textrm{ There is no difference in average wins with team in the playoff. }\
+H_A: \textrm{ There is a difference in average wins with team in the playoff.} 
+\\
+H_0: \textrm{The effect of one independent variable on average Wins does not depend on the effect of the other independent variable . }\
+H_A: \textrm{ There is an interaction effect between top Defences that blizted above 20% and team in the playoff on wins. } 
+$$
+A bit messy but it get's what im trying to find.
+
+```{r}
+model = aov(win~topD_pabove20*playoff, data = data)
+summary(model)
+```
+ooo interesting we can reject our first two hypotheses but our third hypothesis we can not as it is not less then 10% very very interesting.I will now take a deeper look into it with some visualizations and find an answer.
+
+
+### Part 2B:Include a visualization looking at the means.
+```{r}
+y1 <-  mean(data$win, na.rm = TRUE)
+ggplot(data = data, aes(x = topD_pabove20 , y = win, color = playoff))+
+  geom_jitter(width = 0.1, height = 0.1) +
+  stat_summary(fun.data = 'mean_se') 
+```
+
+as you can see the yes mean's is pretty close but then the no mean's is pretty far apart. It should be noted that in the no part their are only two teams that made the playoffs and had no's. Now im going create a another visualization to help better see what's going on.
+```{r}
+plotnfl <-ggplot(data = data, aes(x = topD_pabove20 , y = win, color = playoff))+
+  geom_jitter(width = 0.1, height = 0.1) +
+  geom_boxplot()
+plotnfl + geom_label_repel(aes(label = Tm),
+                  data         = subset(data, win< 4),
+                  box.padding   = 0.5,
+                  point.padding = 0.5,
+                  segment.size  = 0.2,
+                  show.legend=F
+                  ) +
+  geom_label_repel(aes(label = Tm),
+                  data         = subset(data, win > 13),
+                  box.padding   = 0.5,
+                  point.padding = 0.5,
+                  segment.size  = 0.2,
+                  show.legend=F
+                  ) +
+  theme_classic()
+table(data$topD_pabove20,data$playoff)
+```
+
+
+ayeeee this gives a better picture of why we can not reject the third null hypothesis. looking at the yes on the x-axis, you see that they share a  couple of point's and that brings the mean closer together. so that's the reason we can not reject the third null hypothesis as the means are fairly close.
+
+### Part 2C:Discuss if the conditions of the test were met by looking at the graphs and looking at the contingency table of the categorical variables.
+let's get the contingency table of the categorical variables.
+```{r}
+table(data$topD_pabove20,data$playoff)
+```
+I believe that the conditions of the test were not met as We did not find a statistically-significant difference and interaction between the terms was not significant.
+im a little lost of this last part but i think i got the right idea.
+
+
+# Project Part 5: Non-Parametric
+## Part 1: Wilcoxon
+
+
+### Part 1A:  Use a categorical variable and a quantitative variable to compare two medians using Wilcoxon ranked sum test.
+
+I will ve usibg a categorical variable and a quantitative variable from my data set to compare the medians by using the Wilcoxon ranked sum test.
+
+my quantitatitve varuable that i will be using is the amount of Blitz a team did.
+```{r}
+rank(data$Bltz, ties.method = "average")
+```
+
+
+now we can do the Wilcoxon ranked sum test
+Let me do a test against a value first. I am going to ask is the median number of QB hurry is 70 
+```{r}
+median(data$Hrry, na.rm = TRUE)
+```
+```{r}
+wilcox.test(data$Hrry, mu = 70, na.rm = TRUE)
+```
+so i would reject my null hypothesis here 
+
+
+now let's compare the two means oooooo.  i will be using one of my categorical variable that i created a while back.
+
+```{r}
+by(data$Bltz,data$`Prss above 20%`, median)
+```
+```{r}
+table(data$`Prss above 20%`)
+```
+let's run the wilcox test now
+```{r}
+wilcox.test(Bltz ~ `Prss above 20%`, data = data)
+```
+
+We will fail to reject the null hypothesis!
+
+
+## Part 2: Spearman Rank Correlation
+### Part 2A: Using two quantitative variables, preform a Spearman rank correlation test.
+
+```{r}
+cor.test(data$win,data$Bltz, method = "spearman")
+```
+sadly this is a kinda weak connection :( we would fail to reject our null hypothesis 
